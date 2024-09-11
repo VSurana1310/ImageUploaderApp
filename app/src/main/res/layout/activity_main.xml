@@ -1,0 +1,49 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <!-- Button for selecting or capturing image -->
+    <Button
+        android:id="@+id/button_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select or Capture Image" />
+
+    <!-- Button for voice input -->
+    <Button
+        android:id="@+id/button_voice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Voice Input"
+        android:layout_marginTop="20dp" />
+
+    <!-- TextView to display recognized voice input -->
+    <TextView
+        android:id="@+id/textView_voice_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your voice will be converted to text here"
+        android:layout_marginTop="20dp" />
+
+    <!-- ImageView to display selected or captured image -->
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:layout_marginTop="20dp"
+        android:contentDescription="Image Preview" />
+
+    <!-- EditText for user to type text -->
+    <EditText
+        android:id="@+id/editText_symptoms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Type symptoms here"
+        android:layout_marginTop="20dp"
+        android:inputType="text" />
+
+</LinearLayout>
