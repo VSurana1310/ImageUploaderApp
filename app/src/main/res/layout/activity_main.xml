@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,13 +13,15 @@
         android:layout_height="wrap_content"
         android:text="Select or Capture Image" />
 
-    <!-- Button for voice input -->
-    <Button
+    <!-- ImageButton for voice recording (mic icon) -->
+    <ImageButton
         android:id="@+id/button_voice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Voice Input"
-        android:layout_marginTop="20dp" />
+        android:src="@drawable/baseline_mic_24"/> <!-- Start with mic icon -->
+<!--    android:background="?attr/selectableItemBackground"-->
+<!--    android:layout_marginTop="20dp"-->
+<!--    android:contentDescription="Start Recording" />-->
 
     <!-- TextView to display recognized voice input -->
     <TextView

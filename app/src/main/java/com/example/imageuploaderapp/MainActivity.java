@@ -1,12 +1,10 @@
 package com.example.imageuploaderapp;
 
 import android.Manifest;
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,18 +14,17 @@ import android.speech.SpeechRecognizer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -43,7 +40,10 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textViewVoiceInput;
     private EditText editTextSymptoms;
+    private ImageButton buttonVoice;
     private SpeechRecognizer speechRecognizer;
+
+    private boolean isRecording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         imageView = findViewById(R.id.imageView);
         Button buttonImage = findViewById(R.id.button_image);
-        Button buttonVoice = findViewById(R.id.button_voice);
+        buttonVoice = findViewById(R.id.button_voice);
         textViewVoiceInput = findViewById(R.id.textView_voice_input);
         editTextSymptoms = findViewById(R.id.editText_symptoms);
 
@@ -70,11 +70,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Button for voice input
+        // Button for voice input recording and converting
         buttonVoice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startVoiceRecognition();
+                if (!isRecording) {
+                    startVoiceRecording();
+                } else {
+                    stopVoiceRecording();
+                }
             }
         });
 
@@ -108,9 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 if (matches != null) {
                     String recognizedText = matches.get(0);
                     textViewVoiceInput.setText(recognizedText);
-
-                    // Optionally update EditText based on recognized text
-                    // For example, you could populate the EditText with the recognized text
                     editTextSymptoms.setText(recognizedText);
                 }
             }
@@ -125,17 +126,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Request necessary permissions
     private void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO
-            }, REQUEST_CODE_AUDIO_PERMISSION);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE_AUDIO_PERMISSION);
         }
     }
 
@@ -152,20 +144,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Start voice recording and switch icon to stop
+    private void startVoiceRecording() {
+        buttonVoice.setImageResource(R.drawable.baseline_stop_24); // Switch to stop icon
+        isRecording = true;
+
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Start Speaking...");
+
+        // Start listening for speech
+        speechRecognizer.startListening(intent);
+    }
+
+    // Stop voice recording and switch icon back to mic
+    private void stopVoiceRecording() {
+        buttonVoice.setImageResource(R.drawable.baseline_mic_24); // Switch back to mic icon
+        isRecording = false;
+
+        // Stop listening for speech
+        speechRecognizer.stopListening();
+    }
+
     // Show dialog to choose between taking a photo or selecting an image from gallery
     private void showImageChoiceDialog() {
         String[] options = {"Take Photo", "Choose from Gallery"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select an Action");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    openCamera();
-                } else {
-                    openGallery();
-                }
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                openCamera();
+            } else {
+                openGallery();
             }
         });
         builder.create().show();
@@ -189,21 +201,6 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
     }
 
-    // Start the voice recognition process
-    private void startVoiceRecognition() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak something...");
-
-            // Start listening for speech
-            speechRecognizer.startListening(intent);
-        } else {
-            Toast.makeText(this, "Audio permission not granted!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     // Handle the result of image capture or selection
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -212,8 +209,8 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == IMAGE_CAPTURE_CODE) {
                 imageView.setImageURI(imageUri);
-            } else if (requestCode == GALLERY_PICK_CODE && data != null) {
-                Uri imageUri = data.getData();
+            } else if (requestCode == GALLERY_PICK_CODE) {
+                imageUri = data.getData();
                 imageView.setImageURI(imageUri);
             }
         }
