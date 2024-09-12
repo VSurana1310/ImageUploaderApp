@@ -88,6 +88,15 @@
                 android:hint="Type symptoms here"
                 android:inputType="text" />
 
+
+            <Button
+                android:id="@+id/button_upload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Upload Text to Firebase"
+                android:layout_marginTop="20dp"
+                android:enabled="false" />
+
         </LinearLayout>
     </LinearLayout>
 
