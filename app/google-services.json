@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1026235755826",
+    "project_id": "sih-2ps",
+    "storage_bucket": "sih-2ps.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026235755826:android:f6cffb6137e6c9ab9dfb2b",
+        "android_client_info": {
+          "package_name": "com.example.imageuploaderapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCa3xy2ZS12HYk3aLNac7a_21Fjb4ZOUkE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

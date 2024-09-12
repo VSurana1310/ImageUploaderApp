@@ -17,6 +17,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.view.Gravity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -26,6 +27,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Locale;
+
+import java.util.Map;
+import java.util.HashMap;
 
 import androidx.annotation.GravityInt;
 import androidx.annotation.NonNull;
@@ -46,10 +62,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Locale;
-
 public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton fab;
@@ -68,6 +80,13 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewVoiceInput;
     private EditText editTextSymptoms;
     private SpeechRecognizer speechRecognizer;
+
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageRef;
+    private FirebaseFirestore firestore;
+    private CollectionReference collectionRef;
+
+    private Button buttonUpload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +150,14 @@ public class MainActivity extends AppCompatActivity {
         Button buttonVoice = findViewById(R.id.button_voice);
         textViewVoiceInput = findViewById(R.id.textView_voice_input);
         editTextSymptoms = findViewById(R.id.editText_symptoms);
+        buttonUpload = findViewById(R.id.button_upload);
+
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this);
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageRef = firebaseStorage.getReference();
+        firestore = FirebaseFirestore.getInstance();
+        collectionRef = firestore.collection("documents");
 
         // Initialize the SpeechRecognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
@@ -139,20 +166,10 @@ public class MainActivity extends AppCompatActivity {
         requestPermissions();
 
         // Button for image selection or capture
-        buttonImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showImageChoiceDialog();
-            }
-        });
+        buttonImage.setOnClickListener(v -> showImageChoiceDialog());
 
         // Button for voice input
-        buttonVoice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVoiceRecognition();
-            }
-        });
+        buttonVoice.setOnClickListener(v -> startVoiceRecognition());
 
         // Set recognition listener for voice input
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
@@ -184,10 +201,10 @@ public class MainActivity extends AppCompatActivity {
                 if (matches != null) {
                     String recognizedText = matches.get(0);
                     textViewVoiceInput.setText(recognizedText);
-
-                    // Optionally update EditText based on recognized text
-                    // For example, you could populate the EditText with the recognized text
                     editTextSymptoms.setText(recognizedText);
+
+                    // Enable the upload button
+                    enableUploadButton();
                 }
             }
 
@@ -197,6 +214,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onEvent(int eventType, Bundle params) {}
         });
+
+        // Handle button click for combined upload
+        buttonUpload.setOnClickListener(v -> uploadDataToFirestore());
     }
 
     private  void replaceFragment(Fragment fragment) {
@@ -297,14 +317,11 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Select an Action");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    openCamera();
-                } else {
-                    openGallery();
-                }
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                openCamera();
+            } else {
+                openGallery();
             }
         });
         builder.create().show();
@@ -351,10 +368,53 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == IMAGE_CAPTURE_CODE) {
                 imageView.setImageURI(imageUri);
+                enableUploadButton();
             } else if (requestCode == GALLERY_PICK_CODE && data != null) {
-                Uri imageUri = data.getData();
-                imageView.setImageURI(imageUri);
+                Uri selectedImageUri = data.getData();
+                imageView.setImageURI(selectedImageUri);
+                imageUri = selectedImageUri; // Update imageUri
+                enableUploadButton();
             }
+        }
+    }
+
+    // Upload image and text to Firestore
+    private void uploadDataToFirestore() {
+        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+            // Upload image to Firebase Storage
+            StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
+            fileRef.putFile(imageUri)
+                    .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
+                        String imageUrl = downloadUrl.toString();
+                        String text = editTextSymptoms.getText().toString();
+
+                        // Create a new document in Firestore
+                        Map<String, Object> document = new HashMap<>();
+                        document.put("imageUrl", imageUrl);
+                        document.put("text", text);
+
+                        collectionRef.add(document)
+                                .addOnSuccessListener(documentReference -> {
+                                    Toast.makeText(MainActivity.this, "Data uploaded successfully", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(MainActivity.this, "Failed to upload data", Toast.LENGTH_SHORT).show();
+                                });
+                    }))
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(MainActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(this, "Please provide both image and text", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Enable the upload button when both image and text are available
+    private void enableUploadButton() {
+        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+            buttonUpload.setEnabled(true);
+        } else {
+            buttonUpload.setEnabled(false);
         }
     }
 }
