@@ -5,25 +5,14 @@
     android:layout_height="match_parent"
     tools:context=".HomeFragment">
 
-    <!-- Main content layout -->
-    <LinearLayout
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+        android:text="Home"
         android:gravity="center"
-        android:padding="16dp">
-
-
-        <!-- TextView to display recognized voice input -->
-        <TextView
-            android:id="@+id/textView_voice_input"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="You are in the Home" />
-
-
-
-    </LinearLayout>
+        android:textSize="30sp"
+        android:textColor="@color/Lavender"
+        />
 
 </FrameLayout>

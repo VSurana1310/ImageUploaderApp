@@ -74,6 +74,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Button to open the registration form
+        Button buttonRegisterFarmer = findViewById(R.id.openRegisterFormButton);
+        buttonRegisterFarmer.setOnClickListener(v -> {
+            RegisterFormFragment registerFormFragment = new RegisterFormFragment();
+            registerFormFragment.show(getSupportFragmentManager(), "RegisterFormFragment");
+        });
+
         //basic layout
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         fab = findViewById(R.id.fab);

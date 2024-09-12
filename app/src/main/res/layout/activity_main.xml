@@ -16,6 +16,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="56dp"
@@ -23,7 +24,7 @@
             android:elevation="4dp"
             android:background="@color/Lavender"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         <!-- Your existing layout content goes here -->
         <LinearLayout
@@ -32,6 +33,19 @@
             android:gravity="center"
             android:orientation="vertical"
             android:padding="16dp">
+
+            <Button
+                android:id="@+id/openRegisterFormButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Register Farmer" />
+
+
+            <!-- Container for the fragment -->
+            <FrameLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="2dp"
+                android:layout_height="2dp" />
 
             <!-- Button for selecting or capturing image -->
             <Button
@@ -54,7 +68,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Your voice will be converted to text here Ok" />
+                android:text="Your voice will be converted to text here" />
 
             <!-- ImageView to display selected or captured image -->
             <ImageView
@@ -74,14 +88,7 @@
                 android:hint="Type symptoms here"
                 android:inputType="text" />
 
-            <!-- Container for the fragment -->
-            <FrameLayout
-                android:id="@+id/fragment_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
         </LinearLayout>
-
     </LinearLayout>
 
     <!-- Navigation drawer layout -->
@@ -94,6 +101,8 @@
         app:menu="@menu/nav_menue"
         app:itemIconTint="@color/Lavender"
         app:itemTextColor="@color/Lavender"/>
+
+    <!-- Bottom bar with floating action button -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -115,7 +124,6 @@
                 android:background="@android:color/transparent"
                 app:labelVisibilityMode="labeled"
                 app:menu="@menu/bottom_menue" />
-
         </com.google.android.material.bottomappbar.BottomAppBar>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -127,7 +135,5 @@
             app:maxImageSize="40dp"
             android:id="@+id/fab"
             app:tint="@color/Lavender" />
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
 </androidx.drawerlayout.widget.DrawerLayout>
