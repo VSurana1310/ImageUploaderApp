@@ -1,5 +1,12 @@
 [versions]
+
+activityKtx = "1.9.2"
 agp = "8.5.1"
+androidxJunit = "1.1.5"
+espressoCoreVersion = "3.5.1"
+
+firebaseBomVersion = "32.0.0"
+firebaseStorage = "21.0.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -7,16 +14,25 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.2"
 constraintlayout = "2.1.4"
+materialVersion = "1.8.0"
+kotlinVersion = "1.9.24"
 
 [libraries]
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
+firebase-auth = { module = "com.google.firebase:firebase-auth"}
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
+
+kotlinstdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinVersion" }
+
+activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
+espressocore = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
+
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+extjunit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

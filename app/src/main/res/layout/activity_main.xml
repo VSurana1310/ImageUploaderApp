@@ -46,4 +46,16 @@
         android:layout_marginTop="20dp"
         android:inputType="text" />
 
+    <!-- Button to upload selected image to Firebase -->
+    <Button
+        android:id="@+id/button_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload Image to Firebase"
+        android:layout_marginTop="20dp"
+        android:enabled="false" />
+
+    <!-- Button to upload typed text to Firebase -->
+
+
 </LinearLayout>
