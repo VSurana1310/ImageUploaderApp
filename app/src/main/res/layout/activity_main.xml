@@ -25,6 +25,17 @@
             android:background="@color/Lavender"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        <!-- Profile Icon -->
+        <ImageView
+            android:id="@+id/profile_logo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/aklogo"
+            android:contentDescription="Profile"
+            android:layout_gravity="end"
+            android:layout_marginEnd="16dp"
+            android:clickable="true"
+            android:focusable="true" />
 
         <!-- Your existing layout content goes here -->
         <LinearLayout
@@ -34,18 +45,18 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Container for the fragment -->
+            <FrameLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="40dp" />
+
             <Button
                 android:id="@+id/openRegisterFormButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Register Farmer" />
 
-
-            <!-- Container for the fragment -->
-            <FrameLayout
-                android:id="@+id/fragment_container"
-                android:layout_width="2dp"
-                android:layout_height="2dp" />
 
             <!-- Button for selecting or capturing image -->
             <Button
@@ -123,7 +134,8 @@
             android:layout_gravity="bottom"
             android:background="@color/white"
             app:fabCradleMargin="10dp"
-            app:fabCradleRoundedCornerRadius="50dp">
+            app:fabCradleRoundedCornerRadius="50dp"
+            app:fabAlignmentMode="center">
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigationView"
@@ -143,6 +155,9 @@
             app:layout_anchor="@id/bottomAppBar"
             app:maxImageSize="40dp"
             android:id="@+id/fab"
-            app:tint="@color/Lavender" />
+            app:tint="@color/Lavender"
+            app:layout_anchorGravity="center"
+            android:layout_marginBottom="10dp"/>
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

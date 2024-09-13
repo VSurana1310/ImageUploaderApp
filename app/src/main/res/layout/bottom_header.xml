@@ -15,7 +15,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/createText"
@@ -56,7 +57,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Upload a video"
+            android:text="Report Disease"
             android:textColor="@color/Lavender"
             android:layout_marginLeft="30dp"
             android:textSize="16sp"/>
@@ -79,7 +80,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create a short"
+            android:text="Upload Image"
             android:textColor="@color/Lavender"
             android:layout_marginLeft="30dp"
             android:textSize="16sp"/>
@@ -105,7 +106,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Go live"
+            android:text="Record Audio"
             android:textColor="@color/Lavender"
             android:layout_marginLeft="30dp"
             android:textSize="16sp"/>

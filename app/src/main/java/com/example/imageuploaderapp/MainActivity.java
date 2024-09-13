@@ -18,12 +18,14 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.view.Gravity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -88,16 +90,26 @@ public class MainActivity extends AppCompatActivity {
 
     private Button buttonUpload;
 
+    private ImageView profileLogo;
+    private PopupWindow profilePopupWindow;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Button to open the registration form
+//        // Button to open the registration form
         Button buttonRegisterFarmer = findViewById(R.id.openRegisterFormButton);
         buttonRegisterFarmer.setOnClickListener(v -> {
             RegisterFormFragment registerFormFragment = new RegisterFormFragment();
             registerFormFragment.show(getSupportFragmentManager(), "RegisterFormFragment");
+        });
+
+        // Handle Profile Logo click
+        profileLogo = findViewById(R.id.profile_logo);
+        profileLogo.setOnClickListener(v -> {
+            ProfilePopupFragment profilePopupFragment = new ProfilePopupFragment();
+            profilePopupFragment.show(getSupportFragmentManager(), "ProfilePopupFragment");
         });
 
         //basic layout
@@ -105,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -130,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.subscriptions) {
                 replaceFragment(new SubscriptionFragment());
             } else if (itemId == R.id.library) {
-                replaceFragment(new LibraryFragment());
+                replaceFragment(new FarmerDataFragment());
             }
 
             return true;
@@ -380,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Upload image and text to Firestore
     private void uploadDataToFirestore() {
-        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+        if (imageUri != null || !editTextSymptoms.getText().toString().isEmpty()) {
             // Upload image to Firebase Storage
             StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
             fileRef.putFile(imageUri)
@@ -411,10 +424,36 @@ public class MainActivity extends AppCompatActivity {
 
     // Enable the upload button when both image and text are available
     private void enableUploadButton() {
-        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+        if (imageUri != null || !editTextSymptoms.getText().toString().isEmpty()) {
             buttonUpload.setEnabled(true);
         } else {
             buttonUpload.setEnabled(false);
         }
     }
+
+//    @Override
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        int id = item.getItemId();
+//
+//        if (id == R.id.library) { // Handle profile menu click
+//            // Create an instance of FarmerDataFragment
+//            FarmerDataFragment fragment = new FarmerDataFragment();
+//
+//            // Create a Bundle to pass the userId (this is optional, if dynamic)
+//            Bundle args = new Bundle();
+//            args.putString("userId", "J8j8Om4ZpmkX3VQMrWlV"); // Example user ID, replace with actual ID
+//            fragment.setArguments(args);
+//
+//            // Load the fragment
+//            getSupportFragmentManager().beginTransaction()
+//                    .replace(R.id.fragment_container, fragment) // Replace with your actual fragment container ID
+//                    .addToBackStack(null)  // Add to backstack so user can navigate back
+//                    .commit();
+//
+//            return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
+
 }

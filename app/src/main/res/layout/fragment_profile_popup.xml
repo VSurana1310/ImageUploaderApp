@@ -1,0 +1,145 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/background_color">
+
+    <!-- Profile Image Section -->
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/user"
+            android:contentDescription="Profile Image"
+            android:layout_alignParentStart="true"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerCrop" />
+    </RelativeLayout>
+
+    <!-- User Info Section -->
+    <TextView
+        android:id="@+id/tv_farmer_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="username"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_text"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp" />
+
+    <!-- Address Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <!-- Address Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="@drawable/button_border"
+            android:text="Address: "
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/primary_text"
+            android:layout_weight="0" />
+
+        <!-- Address Data -->
+        <TextView
+            android:id="@+id/tv_farmer_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:minWidth="100dp"
+            android:text="12, Address Central, MP"
+            android:textSize="16sp"
+            android:textColor="@color/secondary_text"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+    </LinearLayout>
+
+    <!-- Crops Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <!-- Crops Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="@drawable/button_border"
+            android:text="Crops: "
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/primary_text"
+            android:layout_weight="0" />
+
+        <!-- Crops Data -->
+        <TextView
+            android:id="@+id/tv_farmer_crop"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:minWidth="100dp"
+            android:text="Rice, Oats"
+            android:textSize="16sp"
+            android:textColor="@color/secondary_text"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+    </LinearLayout>
+
+    <!-- Livestock Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <!-- Livestock Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="@drawable/button_border"
+            android:text="Livestock: "
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/primary_text"
+            android:layout_weight="0" />
+
+        <!-- Livestock Data -->
+        <TextView
+            android:id="@+id/tv_farmer_livestock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:minWidth="100dp"
+            android:text="Pigs, Cows"
+            android:textSize="16sp"
+            android:textColor="@color/secondary_text"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+    </LinearLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+</LinearLayout>
