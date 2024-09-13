@@ -1,70 +1,198 @@
 package com.example.imageuploaderapp;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.RecognitionListener;
-import android.speech.SpeechRecognizer;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.view.Gravity;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import java.util.Map;
+import java.util.HashMap;
+
+import androidx.annotation.GravityInt;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+
 
 public class MainActivity extends AppCompatActivity {
 
+    FloatingActionButton fab;
+    DrawerLayout drawerLayout;
+    BottomNavigationView bottomNavigationView;
+
+
+//    private static final int CAMERA_REQUEST_CODE = 100;
+//    private static final int IMAGE_CAPTURE_CODE = 101;
+//    private static final int GALLERY_PICK_CODE = 102;
+//    private static final int REQUEST_CODE_AUDIO_PERMISSION = 200;
     private static final int REQUEST_CODE_IMAGE = 1;
     private static final int REQUEST_CODE_CAMERA = 3;
     private static final int REQUEST_CODE_VOICE_INPUT = 2;
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int AUDIO_REQUEST_CODE = 101;
 
-    private EditText editTextSymptoms;
+    Uri imageUri;
     private Button buttonVoice;
     private LinearLayout linearLayoutImages;
-    private ArrayList<Uri> imageUris = new ArrayList<>();
+    private final ArrayList<Uri> imageUris = new ArrayList<>();
     private ImageView imageView;
 
+
+    private TextView textViewVoiceInput;
+    private EditText editTextSymptoms;
     private SpeechRecognizer speechRecognizer;
     private Intent speechRecognizerIntent;
     private boolean isRecording = false;
+
+    private FirebaseStorage firebaseStorage;
+    private StorageReference storageRef;
+    private FirebaseFirestore firestore;
+    private CollectionReference collectionRef;
+
+    private Button buttonUpload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Button to open the registration form
+        Button buttonRegisterFarmer = findViewById(R.id.openRegisterFormButton);
+        buttonRegisterFarmer.setOnClickListener(v -> {
+            RegisterFormFragment registerFormFragment = new RegisterFormFragment();
+            registerFormFragment.show(getSupportFragmentManager(), "RegisterFormFragment");
+        });
+
+        //basic layout
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        fab = findViewById(R.id.fab);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
+            navigationView.setCheckedItem(R.id.nav_home);
+
+        }
+        replaceFragment(new HomeFragment());
+
+        bottomNavigationView.setBackground(null);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.home) {
+                replaceFragment(new HomeFragment());
+            } else if (itemId == R.id.shorts) {
+                replaceFragment(new ShortsFragment());
+            } else if (itemId == R.id.subscriptions) {
+                replaceFragment(new SubscriptionFragment());
+            } else if (itemId == R.id.library) {
+                replaceFragment(new LibraryFragment());
+            }
+
+            return true;
+        });
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showBottomDialog();
+            }
+        });
+
+
+
+        imageView = findViewById(R.id.imageView);
+//        buttonImage = findViewById(R.id.button_image);
+        buttonVoice = findViewById(R.id.button_voice);
+//        textViewVoiceInput = findViewById(R.id.textView_voice_input);
         editTextSymptoms = findViewById(R.id.editText_symptoms);
         linearLayoutImages = findViewById(R.id.linearLayout_images);
-        buttonVoice = findViewById(R.id.button_voice);
-        imageView = findViewById(R.id.imageView);
-
         Button buttonChooseImage = findViewById(R.id.button_choose_image);
 
-        // Initialize SpeechRecognizer
+        buttonUpload = findViewById(R.id.button_upload);
+
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this);
+        firebaseStorage = FirebaseStorage.getInstance();
+        storageRef = firebaseStorage.getReference();
+        firestore = FirebaseFirestore.getInstance();
+        collectionRef = firestore.collection("documents");
+
+        // Initialize the SpeechRecognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+
+        // Request permissions
+//        requestPermissions();
+
+        // Button for image selection or capture
+//        buttonImage.setOnClickListener(v -> showImageChoiceDialog());
+
+        // Button for voice input
+//        buttonVoice.setOnClickListener(v -> toggleVoiceRecording());
+
+        // Set recognition listener for voice input
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
             public void onReadyForSpeech(Bundle params) {}
@@ -93,8 +221,13 @@ public class MainActivity extends AppCompatActivity {
                     String recognizedText = matches.get(0);
                     String currentText = editTextSymptoms.getText().toString();
                     editTextSymptoms.setText(currentText + " " + recognizedText);
+                    // Restart listening for continuous input
+                    if (isRecording) {
+                        speechRecognizer.startListening(speechRecognizerIntent);
+                    }
                 }
             }
+
 
             @Override
             public void onPartialResults(Bundle partialResults) {}
@@ -103,6 +236,8 @@ public class MainActivity extends AppCompatActivity {
             public void onEvent(int eventType, Bundle params) {}
         });
 
+        // Handle button click for combined upload
+        buttonUpload.setOnClickListener(v -> uploadDataToFirestore());
         // Prepare the speech recognizer intent
         speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -120,6 +255,72 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private  void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.commit();
+    }
+
+    private void showBottomDialog() {
+
+        final Dialog dialog = new Dialog(this);  // dialog thoda dekh ke
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);  // windwo bhi
+        dialog.setContentView(R.layout.bottom_header);
+
+        LinearLayout videoLayout = dialog.findViewById(R.id.layoutVideo);
+        LinearLayout shortsLayout = dialog.findViewById(R.id.layoutShorts);
+        LinearLayout liveLayout = dialog.findViewById(R.id.layoutLive);
+        ImageView cancelButton = dialog.findViewById(R.id.cancelButton);
+
+        videoLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+                Toast.makeText(MainActivity.this,"Upload a Video is clicked",Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        shortsLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+                Toast.makeText(MainActivity.this,"Create a short is Clicked",Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        liveLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+                Toast.makeText(MainActivity.this,"Go live is Clicked",Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+
+    }
+
+
+
 
     private void toggleVoiceRecording() {
         if (isRecording) {
@@ -171,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
         linearLayoutImages.addView(imageView);
     }
 
-
+    // Handle the result of image capture or selection
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -204,9 +405,49 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Action canceled", Toast.LENGTH_SHORT).show();
         }
+        enableUploadButton();
     }
 
-    private Uri imageUri;
+    // Upload image and text to Firestore
+    private void uploadDataToFirestore() {
+        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+            // Upload image to Firebase Storage
+            StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
+            fileRef.putFile(imageUri)
+                    .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
+                        String imageUrl = downloadUrl.toString();
+                        String text = editTextSymptoms.getText().toString();
+
+                        // Create a new document in Firestore
+                        Map<String, Object> document = new HashMap<>();
+                        document.put("imageUrl", imageUrl);
+                        document.put("text", text);
+
+                        collectionRef.add(document)
+                                .addOnSuccessListener(documentReference -> {
+                                    Toast.makeText(MainActivity.this, "Data uploaded successfully", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(MainActivity.this, "Failed to upload data", Toast.LENGTH_SHORT).show();
+                                });
+                    }))
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(MainActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(this, "Please provide both image and text", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Enable the upload button when both image and text are available
+    private void enableUploadButton() {
+        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+            buttonUpload.setEnabled(true);
+        } else {
+            buttonUpload.setEnabled(false);
+        }
+    }
+//    private Uri imageUri;
 
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
