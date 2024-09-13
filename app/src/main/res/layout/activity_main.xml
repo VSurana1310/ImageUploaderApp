@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
@@ -25,17 +26,6 @@
             android:background="@color/Lavender"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-        <!-- Profile Icon -->
-        <ImageView
-            android:id="@+id/profile_logo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/aklogo"
-            android:contentDescription="Profile"
-            android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
-            android:clickable="true"
-            android:focusable="true" />
 
         <!-- Your existing layout content goes here -->
         <LinearLayout
@@ -43,70 +33,152 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:background="#f5f5f5">
+
+            <ImageView
+                android:id="@+id/profile_logo"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/aklogo"
+                android:contentDescription="Profile"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:clickable="true"
+                android:focusable="true" />
 
             <!-- Container for the fragment -->
-            <FrameLayout
-                android:id="@+id/fragment_container"
-                android:layout_width="match_parent"
-                android:layout_height="40dp" />
-
             <Button
                 android:id="@+id/openRegisterFormButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Register Farmer" />
 
+            <FrameLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="2dp"
+                android:layout_height="2dp" />
 
-            <!-- Button for selecting or capturing image -->
-            <Button
-                android:id="@+id/button_image"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Select or Capture Image" />
-
-            <!-- Button for voice input -->
-            <Button
-                android:id="@+id/button_voice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Start Voice Input" />
-
-            <!-- TextView to display recognized voice input -->
-            <TextView
-                android:id="@+id/textView_voice_input"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Your voice will be converted to text here" />
-
-            <!-- ImageView to display selected or captured image -->
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_marginTop="20dp"
-                android:contentDescription="Image Preview"
-                android:scaleType="centerCrop" />
-
-            <!-- EditText for user to type text -->
-            <EditText
-                android:id="@+id/editText_symptoms"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:hint="Type symptoms here"
-                android:inputType="text" />
-
-
+            <!-- Upload to Firebase Button (moved to the position of Select or Capture Image button) -->
             <Button
                 android:id="@+id/button_upload"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Upload Text to Firebase"
-                android:layout_marginTop="20dp"
-                android:enabled="false" />
+                android:layout_marginTop="16dp"
+                android:enabled="false"
+                android:backgroundTint="#28a745"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                android:textStyle="bold" />
+
+            <!-- Header Title -->
+            <!--            <TextView-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:text="Symptom Reporter"-->
+            <!--                android:textSize="24sp"-->
+            <!--                android:textColor="#000000"-->
+            <!--                android:textStyle="bold"-->
+            <!--                android:layout_gravity="center_horizontal"-->
+            <!--                android:layout_marginBottom="24dp"-->
+            <!--                android:contentDescription="App title: Symptom Reporter" />-->
+
+            <!-- Placeholder for Symptom Input -->
+            <EditText
+                android:id="@+id/editText_symptoms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Type symptoms here..."
+                android:textColorHint="#000000"
+                android:textColor="#000000"
+                android:gravity="top|start"
+                android:inputType="textMultiLine"
+                android:scrollbars="vertical"
+                android:maxLines="10"
+                android:overScrollMode="always"
+                android:padding="16dp"
+                android:background="@android:drawable/edit_text"
+                android:layout_marginTop="16dp"
+                android:importantForAccessibility="yes"
+                android:contentDescription="Input field to type symptoms" />
+
+            <!-- Button for Voice Input -->
+            <Button
+                android:id="@+id/button_voice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Record Symptoms"
+                android:backgroundTint="#007BFF"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:drawableLeft="@drawable/baseline_mic_24"
+                android:drawablePadding="8dp"
+                android:importantForAccessibility="yes"
+                android:contentDescription="Button to record symptoms using voice input" />
+
+            <!-- Button to Choose/Take Images (moved below the TextView for displaying voice input) -->
+            <Button
+                android:id="@+id/button_choose_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Images"
+                android:backgroundTint="#28a745"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:drawableLeft="@drawable/baseline_image_24"
+                android:drawablePadding="8dp"
+                android:importantForAccessibility="yes"
+                android:contentDescription="Button to add or capture images" />
+
+            <!-- ImageView for displaying selected image -->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitCenter"
+                    android:background="#e0e0e0"
+                    android:contentDescription="Selected image will be displayed here" />
+            </ScrollView>
+
+            <!-- TextView for displaying voice input -->
+            <!--            <TextView-->
+            <!--                android:id="@+id/textView_voice_input"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_marginTop="16dp"-->
+            <!--                android:textColor="#000000"-->
+            <!--                android:textSize="18sp"-->
+            <!--                android:padding="16dp"-->
+            <!--                android:background="#ffffff"-->
+            <!--                android:gravity="top|start"-->
+            <!--                android:contentDescription="Voice input will be displayed here" />-->
+
+            <!-- Scrollable View for Selected Images -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="horizontal"
+                android:layout_marginTop="24dp">
+
+                <LinearLayout
+                    android:id="@+id/linearLayout_images"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <!-- Dynamically add ImageViews here for multiple images -->
+                </LinearLayout>
+
+            </HorizontalScrollView>
 
         </LinearLayout>
     </LinearLayout>
@@ -134,8 +206,7 @@
             android:layout_gravity="bottom"
             android:background="@color/white"
             app:fabCradleMargin="10dp"
-            app:fabCradleRoundedCornerRadius="50dp"
-            app:fabAlignmentMode="center">
+            app:fabCradleRoundedCornerRadius="50dp">
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottomNavigationView"
@@ -155,9 +226,6 @@
             app:layout_anchor="@id/bottomAppBar"
             app:maxImageSize="40dp"
             android:id="@+id/fab"
-            app:tint="@color/Lavender"
-            app:layout_anchorGravity="center"
-            android:layout_marginBottom="10dp"/>
-
+            app:tint="@color/Lavender" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

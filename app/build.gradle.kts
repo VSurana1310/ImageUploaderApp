@@ -2,6 +2,7 @@ plugins {
 //    alias(libs.plugins.android.application)
     id("com.android.application")
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.kapt") version "1.9.22" apply false
 }
 
 android {
@@ -28,10 +29,20 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+//    kotlinOptions {
+//        jvmTarget = "17"
+//    }
+}
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
+
 
 dependencies {
     implementation(platform(libs.firebase.bom))
@@ -46,4 +57,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.extjunit)
     androidTestImplementation(libs.espressocore)
+//    implementation(libs.appcompat.v161)
+    implementation(libs.core.ktx)
+//    implementation(libs.constraintlayout)
+//    implementation(libs.material.v190)
+    implementation(libs.glide)
+//    implementation("com.github.bumptech.glide:compiler:4.15.1")
 }

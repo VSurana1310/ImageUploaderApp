@@ -8,25 +8,27 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.AudioManager;
+import android.media.MediaRecorder;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.view.Gravity;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -53,6 +57,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -71,17 +76,28 @@ public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
 
 
+    //    private static final int CAMERA_REQUEST_CODE = 100;
+//    private static final int IMAGE_CAPTURE_CODE = 101;
+//    private static final int GALLERY_PICK_CODE = 102;
+//    private static final int REQUEST_CODE_AUDIO_PERMISSION = 200;
+    private static final int REQUEST_CODE_IMAGE = 1;
+    private static final int REQUEST_CODE_CAMERA = 3;
+    private static final int REQUEST_CODE_VOICE_INPUT = 2;
     private static final int CAMERA_REQUEST_CODE = 100;
-    private static final int IMAGE_CAPTURE_CODE = 101;
-    private static final int GALLERY_PICK_CODE = 102;
-    private static final int REQUEST_CODE_AUDIO_PERMISSION = 200;
+    private static final int AUDIO_REQUEST_CODE = 101;
 
-    ImageView imageView;
     Uri imageUri;
+    private Button buttonVoice;
+    private LinearLayout linearLayoutImages;
+    private final ArrayList<Uri> imageUris = new ArrayList<>();
+    private ImageView imageView;
+
 
     private TextView textViewVoiceInput;
     private EditText editTextSymptoms;
     private SpeechRecognizer speechRecognizer;
+    private Intent speechRecognizerIntent;
+    private boolean isRecording = false;
 
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
@@ -90,26 +106,16 @@ public class MainActivity extends AppCompatActivity {
 
     private Button buttonUpload;
 
-    private ImageView profileLogo;
-    private PopupWindow profilePopupWindow;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        // Button to open the registration form
+        // Button to open the registration form
         Button buttonRegisterFarmer = findViewById(R.id.openRegisterFormButton);
         buttonRegisterFarmer.setOnClickListener(v -> {
             RegisterFormFragment registerFormFragment = new RegisterFormFragment();
             registerFormFragment.show(getSupportFragmentManager(), "RegisterFormFragment");
-        });
-
-        // Handle Profile Logo click
-        profileLogo = findViewById(R.id.profile_logo);
-        profileLogo.setOnClickListener(v -> {
-            ProfilePopupFragment profilePopupFragment = new ProfilePopupFragment();
-            profilePopupFragment.show(getSupportFragmentManager(), "ProfilePopupFragment");
         });
 
         //basic layout
@@ -117,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -159,10 +164,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         imageView = findViewById(R.id.imageView);
-        Button buttonImage = findViewById(R.id.button_image);
-        Button buttonVoice = findViewById(R.id.button_voice);
-        textViewVoiceInput = findViewById(R.id.textView_voice_input);
+//        buttonImage = findViewById(R.id.button_image);
+        buttonVoice = findViewById(R.id.button_voice);
+//        textViewVoiceInput = findViewById(R.id.textView_voice_input);
         editTextSymptoms = findViewById(R.id.editText_symptoms);
+        linearLayoutImages = findViewById(R.id.linearLayout_images);
+        Button buttonChooseImage = findViewById(R.id.button_choose_image);
+
         buttonUpload = findViewById(R.id.button_upload);
 
         // Initialize Firebase
@@ -176,20 +184,18 @@ public class MainActivity extends AppCompatActivity {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
 
         // Request permissions
-        requestPermissions();
+//        requestPermissions();
 
         // Button for image selection or capture
-        buttonImage.setOnClickListener(v -> showImageChoiceDialog());
+//        buttonImage.setOnClickListener(v -> showImageChoiceDialog());
 
         // Button for voice input
-        buttonVoice.setOnClickListener(v -> startVoiceRecognition());
+//        buttonVoice.setOnClickListener(v -> toggleVoiceRecording());
 
         // Set recognition listener for voice input
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
-            public void onReadyForSpeech(Bundle params) {
-                Toast.makeText(MainActivity.this, "Listening...", Toast.LENGTH_SHORT).show();
-            }
+            public void onReadyForSpeech(Bundle params) {}
 
             @Override
             public void onBeginningOfSpeech() {}
@@ -205,21 +211,23 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(int error) {
-                Toast.makeText(MainActivity.this, "Error recognizing speech", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if (matches != null) {
+                if (matches != null && !matches.isEmpty()) {
                     String recognizedText = matches.get(0);
-                    textViewVoiceInput.setText(recognizedText);
-                    editTextSymptoms.setText(recognizedText);
-
-                    // Enable the upload button
-                    enableUploadButton();
+                    String currentText = editTextSymptoms.getText().toString();
+                    editTextSymptoms.setText(currentText + " " + recognizedText);
+                    // Restart listening for continuous input
+                    if (isRecording) {
+                        speechRecognizer.startListening(speechRecognizerIntent);
+                    }
                 }
             }
+
 
             @Override
             public void onPartialResults(Bundle partialResults) {}
@@ -230,6 +238,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle button click for combined upload
         buttonUpload.setOnClickListener(v -> uploadDataToFirestore());
+        // Prepare the speech recognizer intent
+        speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...");
+
+        buttonVoice.setOnClickListener(v -> toggleVoiceRecording());
+
+        // Choose image button listener for both camera and gallery
+        buttonChooseImage.setOnClickListener(v -> {
+            if (checkCameraPermission()) {
+                showImageOptions();
+            } else {
+                requestCameraPermission();
+            }
+        });
     }
 
     private  void replaceFragment(Fragment fragment) {
@@ -295,82 +319,57 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    // Request necessary permissions
-    private void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO
-            }, REQUEST_CODE_AUDIO_PERMISSION);
-        }
-    }
 
-    // Handle permission request results
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_AUDIO_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
-    // Show dialog to choose between taking a photo or selecting an image from gallery
-    private void showImageChoiceDialog() {
-        String[] options = {"Take Photo", "Choose from Gallery"};
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select an Action");
-        builder.setItems(options, (dialog, which) -> {
-            if (which == 0) {
-                openCamera();
-            } else {
-                openGallery();
-            }
-        });
-        builder.create().show();
-    }
-
-    // Open the camera to take a photo
-    private void openCamera() {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "New Picture");
-        values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera");
-        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        startActivityForResult(cameraIntent, IMAGE_CAPTURE_CODE);
-    }
-
-    // Open the gallery to choose an image
-    private void openGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, GALLERY_PICK_CODE);
-    }
-
-    // Start the voice recognition process
-    private void startVoiceRecognition() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak something...");
-
-            // Start listening for speech
-            speechRecognizer.startListening(intent);
+    private void toggleVoiceRecording() {
+        if (isRecording) {
+            stopRecording();
+            buttonVoice.setText("Start Recording");
         } else {
-            Toast.makeText(this, "Audio permission not granted!", Toast.LENGTH_SHORT).show();
+            startRecording();
+            buttonVoice.setText("Stop Recording");
         }
+        isRecording = !isRecording;
+    }
+
+    private void startRecording() {
+        if (speechRecognizer != null) {
+            speechRecognizer.startListening(speechRecognizerIntent);
+            Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void stopRecording() {
+        if (speechRecognizer != null) {
+            speechRecognizer.stopListening();
+            Toast.makeText(this, "Recording stopped", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Show options to choose between camera and gallery
+    private void showImageOptions() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Create chooser intent
+        Intent chooserIntent = Intent.createChooser(galleryIntent, "Select or Capture Image");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { cameraIntent });
+        startActivityForResult(chooserIntent, REQUEST_CODE_IMAGE);
+    }
+
+
+    // Add selected images to horizontal scroll view
+    private void addImageToScrollView(Uri imageUri) {
+        ImageView imageView = new ImageView(this);
+        // Set the desired size for the ImageView
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(800, 800); // Increase size as needed
+        layoutParams.setMargins(10, 10, 10, 10);
+        imageView.setLayoutParams(layoutParams);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE); // Maintain aspect ratio
+        imageView.setImageURI(imageUri);
+        linearLayoutImages.addView(imageView);
     }
 
     // Handle the result of image capture or selection
@@ -379,21 +378,39 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == IMAGE_CAPTURE_CODE) {
-                imageView.setImageURI(imageUri);
-                enableUploadButton();
-            } else if (requestCode == GALLERY_PICK_CODE && data != null) {
-                Uri selectedImageUri = data.getData();
-                imageView.setImageURI(selectedImageUri);
-                imageUri = selectedImageUri; // Update imageUri
-                enableUploadButton();
+            if (requestCode == REQUEST_CODE_IMAGE) {
+                if (data != null) {
+                    if (data.getClipData() != null) {
+                        // Multiple images selected
+                        int count = data.getClipData().getItemCount();
+                        for (int i = 0; i < count; i++) {
+                            Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                            addImageToScrollView(imageUri);
+                        }
+                    } else if (data.getData() != null) {
+                        // Single image selected or captured
+                        Uri imageUri = data.getData();
+                        if (imageUri != null) {
+                            if (imageUri.toString().contains("capture")) {
+                                // Image captured from camera
+                                addImageToScrollView(imageUri);
+                            } else {
+                                // Image selected from gallery
+                                addImageToScrollView(imageUri);
+                            }
+                        }
+                    }
+                }
             }
+        } else {
+            Toast.makeText(this, "Action canceled", Toast.LENGTH_SHORT).show();
         }
+        enableUploadButton();
     }
 
     // Upload image and text to Firestore
     private void uploadDataToFirestore() {
-        if (imageUri != null || !editTextSymptoms.getText().toString().isEmpty()) {
+        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
             // Upload image to Firebase Storage
             StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
             fileRef.putFile(imageUri)
@@ -424,36 +441,77 @@ public class MainActivity extends AppCompatActivity {
 
     // Enable the upload button when both image and text are available
     private void enableUploadButton() {
-        if (imageUri != null || !editTextSymptoms.getText().toString().isEmpty()) {
+        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
             buttonUpload.setEnabled(true);
         } else {
             buttonUpload.setEnabled(false);
         }
     }
+//    private Uri imageUri;
 
-//    @Override
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        int id = item.getItemId();
-//
-//        if (id == R.id.library) { // Handle profile menu click
-//            // Create an instance of FarmerDataFragment
-//            FarmerDataFragment fragment = new FarmerDataFragment();
-//
-//            // Create a Bundle to pass the userId (this is optional, if dynamic)
-//            Bundle args = new Bundle();
-//            args.putString("userId", "J8j8Om4ZpmkX3VQMrWlV"); // Example user ID, replace with actual ID
-//            fragment.setArguments(args);
-//
-//            // Load the fragment
-//            getSupportFragmentManager().beginTransaction()
-//                    .replace(R.id.fragment_container, fragment) // Replace with your actual fragment container ID
-//                    .addToBackStack(null)  // Add to backstack so user can navigate back
-//                    .commit();
-//
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Handle error
+            }
+            if (photoFile != null) {
+                imageUri = FileProvider.getUriForFile(this, "com.example.imageuploaderapp.fileprovider", photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(takePictureIntent, REQUEST_CODE_CAMERA);
+            }
+        }
+    }
 
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+    }
+
+
+    // Check for camera permission
+    private boolean checkCameraPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+    }
+
+    // Check for audio permission
+    private boolean checkAudioPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestAudioPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showImageOptions();
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == AUDIO_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                toggleVoiceRecording();
+            } else {
+                Toast.makeText(this, "Audio permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
