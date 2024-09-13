@@ -408,40 +408,61 @@ public class MainActivity extends AppCompatActivity {
         enableUploadButton();
     }
 
-    // Upload image and text to Firestore
+    // Upload images and text to Firestore
     private void uploadDataToFirestore() {
-        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
-            // Upload image to Firebase Storage
-            StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
-            fileRef.putFile(imageUri)
-                    .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                        String imageUrl = downloadUrl.toString();
-                        String text = editTextSymptoms.getText().toString();
+        if (!imageUris.isEmpty()) {
+            final ArrayList<String> uploadedImageUrls = new ArrayList<>();
+            final int totalImages = imageUris.size(); // Total number of images
+            final int[] uploadCounter = {0}; // Counter to track the number of uploads
 
-                        // Create a new document in Firestore
-                        Map<String, Object> document = new HashMap<>();
-                        document.put("imageUrl", imageUrl);
-                        document.put("text", text);
+            for (Uri imageUri : imageUris) {
+                StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
 
-                        collectionRef.add(document)
-                                .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(MainActivity.this, "Data uploaded successfully", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(MainActivity.this, "Failed to upload data", Toast.LENGTH_SHORT).show();
-                                });
-                    }))
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(MainActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    });
+                fileRef.putFile(imageUri).addOnSuccessListener(taskSnapshot ->
+                        fileRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
+                            uploadedImageUrls.add(downloadUrl.toString());
+
+                            // Increment the counter when each image is uploaded
+                            uploadCounter[0]++;
+
+                            // If all images are uploaded, upload text and image URLs to Firestore
+                            if (uploadCounter[0] == totalImages) {
+                                uploadToFirestore(uploadedImageUrls);
+                            }
+                        }).addOnFailureListener(e -> {
+                            Toast.makeText(MainActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        })
+                ).addOnFailureListener(e -> {
+                    Toast.makeText(MainActivity.this, "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
         } else {
-            Toast.makeText(this, "Please provide both image and text", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please provide both images and text", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // Enable the upload button when both image and text are available
+    // Upload image URLs and text to Firestore
+    private void uploadToFirestore(ArrayList<String> imageUrls) {
+        String text = editTextSymptoms.getText().toString();
+
+        // Create a new document in Firestore
+        Map<String, Object> document = new HashMap<>();
+        document.put("imageUrls", imageUrls); // List of image URLs
+        document.put("text", text);
+
+        collectionRef.add(document)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(MainActivity.this, "Data uploaded successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(MainActivity.this, "Failed to upload data", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+    // Enable the upload button when both images and text are available
     private void enableUploadButton() {
-        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+        if (!imageUris.isEmpty()) {
             buttonUpload.setEnabled(true);
         } else {
             buttonUpload.setEnabled(false);
