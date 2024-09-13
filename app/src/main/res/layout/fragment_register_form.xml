@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Farmer Name -->
     <EditText
         android:id="@+id/editTextName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Name"
+        android:hint="Farmer's Name"
         android:inputType="text" />
 
+    <!-- Address/Area -->
     <EditText
         android:id="@+id/editTextAddress"
         android:layout_width="match_parent"
@@ -19,24 +21,34 @@
         android:hint="Address"
         android:inputType="text" />
 
+    <!-- Crop Details -->
     <EditText
         android:id="@+id/editTextCrops"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Details about Crops"
+        android:hint="Crop Details"
         android:inputType="textMultiLine" />
 
+    <!-- Livestock Details -->
     <EditText
         android:id="@+id/editTextLivestock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Details about Livestock"
+        android:hint="Livestock Details"
         android:inputType="textMultiLine" />
 
+    <!-- Submit Button -->
     <Button
         android:id="@+id/buttonSubmit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Submit" />
+    
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
 </LinearLayout>

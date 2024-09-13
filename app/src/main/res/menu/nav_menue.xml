@@ -31,10 +31,21 @@
         android:title="">
 
         <menu>
+
+            <!-- Login Button -->
             <item
-                android:id="@+id/nav_logout"
-                android:icon="@drawable/baseline_exit_to_app_24"
-                android:title="Logout"/>
+                android:id="@+id/nav_login"
+                android:title="Login"
+                android:icon="@drawable/baseline_login_24"
+                />
+
+            <!-- Register Button -->
+<!--            <item-->
+<!--                android:id="@+id/nav_register"-->
+<!--                android:title="Register"-->
+<!--                android:icon="@drawable/baseline_person_add_24"-->
+<!--                />-->
+
         </menu>
 
     </item>

@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
 
 
-//    private static final int CAMERA_REQUEST_CODE = 100;
+    //    private static final int CAMERA_REQUEST_CODE = 100;
 //    private static final int IMAGE_CAPTURE_CODE = 101;
 //    private static final int GALLERY_PICK_CODE = 102;
 //    private static final int REQUEST_CODE_AUDIO_PERMISSION = 200;
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.subscriptions) {
                 replaceFragment(new SubscriptionFragment());
             } else if (itemId == R.id.library) {
-                replaceFragment(new LibraryFragment());
+                replaceFragment(new FarmerDataFragment());
             }
 
             return true;

@@ -3,16 +3,96 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LibraryFragment">
+    tools:context=".FarmerDataFragment"
+    android:padding="16dp">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Library"
-        android:gravity="center"
-        android:textSize="30sp"
-        android:textColor="@color/Lavender"
-        />
+
+        <!-- Heading for Reports History -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reports History"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:paddingBottom="16dp"
+            android:textColor="@color/Lavender" />
+
+        <!-- Farmer's Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Farmer's Name:"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/farmer_name"
+            android:text="John Doe"
+            android:textSize="16sp"
+            android:paddingBottom="8dp" />
+
+        <!-- Farmer's Address -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Address:"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/farmer_address"
+            android:text="1234 Village Road, District XYZ"
+            android:textSize="16sp"
+            android:paddingBottom="8dp" />
+
+        <!-- Farmer's Contact -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contact Number:"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/farmer_contact"
+            android:text="+91-1234567890"
+            android:textSize="16sp"
+            android:paddingBottom="8dp" />
+
+        <!-- Farmer's Crop Details -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Crops Grown:"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/farmer_crops"
+            android:text="Wheat, Corn"
+            android:textSize="16sp"
+            android:paddingBottom="8dp" />
+
+        <!-- Farmer's Last Reported Date -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Last Reported Date:"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/farmer_last_report"
+            android:text="12th September 2024"
+            android:textSize="16sp"
+            android:paddingBottom="8dp" />
+
 
 </FrameLayout>
