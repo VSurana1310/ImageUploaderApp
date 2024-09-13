@@ -77,9 +77,21 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     Uri imageUri;
 
-    private TextView textViewVoiceInput;
-    private EditText editTextSymptoms;
+
+    EditText editTextSymptoms;
+    Button buttonVoice;
+    LinearLayout linearLayoutImages;
+    ArrayList<Uri> imageUris = new ArrayList<>();
+
+
     private SpeechRecognizer speechRecognizer;
+    private Intent speechRecognizerIntent;
+    private boolean isRecording =false;
+
+
+    private TextView textViewVoiceInput;
+//    private EditText editTextSymptoms;
+//    private SpeechRecognizer speechRecognizer;
 
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
@@ -157,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         firebaseStorage = FirebaseStorage.getInstance();
         storageRef = firebaseStorage.getReference();
         firestore = FirebaseFirestore.getInstance();
-        collectionRef = firestore.collection("documents");
+        collectionRef = firestore.collection("reported data");
 
         // Initialize the SpeechRecognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
@@ -380,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Upload image and text to Firestore
     private void uploadDataToFirestore() {
-        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+        if (imageUri != null || !editTextSymptoms.getText().toString().isEmpty()) {
             // Upload image to Firebase Storage
             StorageReference fileRef = storageRef.child("images/" + imageUri.getLastPathSegment());
             fileRef.putFile(imageUri)
@@ -411,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Enable the upload button when both image and text are available
     private void enableUploadButton() {
-        if (imageUri != null && !editTextSymptoms.getText().toString().isEmpty()) {
+        if (imageUri != null || !editTextSymptoms.getText().toString().isEmpty()) {
             buttonUpload.setEnabled(true);
         } else {
             buttonUpload.setEnabled(false);
