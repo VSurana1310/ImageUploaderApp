@@ -12,6 +12,7 @@
     tools:context=".MainActivity">
 
     <!-- Main content layout -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,44 +28,52 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="20dp"
+            android:layout_height="20dp" />
+
         <!-- Your existing layout content goes here -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:padding="14dp"
             android:background="#f5f5f5">
 
-            <ImageView
-                android:id="@+id/profile_logo"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/aklogo"
-                android:contentDescription="Profile"
-                android:layout_gravity="end"
-                android:layout_marginEnd="16dp"
-                android:clickable="true"
-                android:focusable="true" />
-
-            <!-- Container for the fragment -->
-            <Button
-                android:id="@+id/openRegisterFormButton"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Register Farmer" />
+                android:text="Welcome to the App"
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:layout_marginBottom="24dp"
+                android:layout_marginTop="16dp" />
 
-            <FrameLayout
-                android:id="@+id/fragment_container"
-                android:layout_width="2dp"
-                android:layout_height="2dp" />
+            <!-- Register Button -->
+            <Button
+                android:id="@+id/registerButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Register"
+                android:visibility="gone" />  <!-- Make it invisible initially -->
+
+            <!-- Profile Button -->
+            <Button
+                android:id="@+id/profileButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Profile"
+                android:visibility="gone" />  <!-- Make it invisible initially -->
 
             <!-- Upload to Firebase Button (moved to the position of Select or Capture Image button) -->
             <Button
                 android:id="@+id/button_upload"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Upload Text to Firebase"
+                android:text="Upload Data"
                 android:layout_marginTop="16dp"
                 android:enabled="false"
                 android:backgroundTint="#28a745"
@@ -100,6 +109,8 @@
                 android:padding="16dp"
                 android:background="@android:drawable/edit_text"
                 android:layout_marginTop="16dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:importantForAccessibility="yes"
                 android:contentDescription="Input field to type symptoms" />
 
@@ -134,6 +145,7 @@
                 android:drawablePadding="8dp"
                 android:importantForAccessibility="yes"
                 android:contentDescription="Button to add or capture images" />
+
 
             <!-- ImageView for displaying selected image -->
             <ScrollView

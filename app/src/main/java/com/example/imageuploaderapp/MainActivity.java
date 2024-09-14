@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.storage.FirebaseStorage;
@@ -99,10 +100,18 @@ public class MainActivity extends AppCompatActivity {
     private Intent speechRecognizerIntent;
     private boolean isRecording = false;
 
+    private Button buttonRegisterFarmer;
+    private Button buttonProfileView;
+    private FirebaseFirestore db;
+    private String userDocumentId; // Assume this is fetched from SharedPreferences or other source
+
+
     private FirebaseStorage firebaseStorage;
     private StorageReference storageRef;
     private FirebaseFirestore firestore;
     private CollectionReference collectionRef;
+
+
 
     private Button buttonUpload;
 
@@ -111,12 +120,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Button to open the registration form
-        Button buttonRegisterFarmer = findViewById(R.id.openRegisterFormButton);
+
+        buttonRegisterFarmer = findViewById(R.id.registerButton);
+        buttonProfileView = findViewById(R.id.profileButton); // Make sure this button is defined in your layout
+        db = FirebaseFirestore.getInstance();
+
+        // Fetch user document ID (for example from SharedPreferences)
+        userDocumentId = getSharedPreferences("userPrefs", 0).getString("documentId", null);
+
+        // Check if user data exists
+        if (userDocumentId != null) {
+            checkUserData(userDocumentId);
+        } else {
+            showRegisterButton();
+        }
+
         buttonRegisterFarmer.setOnClickListener(v -> {
-            RegisterFormFragment registerFormFragment = new RegisterFormFragment();
-            registerFormFragment.show(getSupportFragmentManager(), "RegisterFormFragment");
+            // Open Register Form Fragment
+            new RegisterFormFragment().show(getSupportFragmentManager(), "RegisterFormFragment");
         });
+
+        buttonProfileView.setOnClickListener(v -> {
+            // Open Profile View
+            new ProfilePopupFragment().show(getSupportFragmentManager(), "ProfilePopupFragment");
+            Toast.makeText(this, "Opening Profile View", Toast.LENGTH_SHORT).show();
+        });
+
+        // Button to open the registration form
+//        Button buttonRegisterFarmer = findViewById(R.id.openRegisterFormButton);
+//        buttonRegisterFarmer.setOnClickListener(v -> {
+//            RegisterFormFragment registerFormFragment = new RegisterFormFragment();
+//            registerFormFragment.show(getSupportFragmentManager(), "RegisterFormFragment");
+//        });
 
         //basic layout
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
@@ -254,6 +289,32 @@ public class MainActivity extends AppCompatActivity {
                 requestCameraPermission();
             }
         });
+    }
+
+    private void checkUserData(String documentId) {
+        DocumentReference docRef = db.collection("farmers").document(documentId);
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (task.getResult().exists()) {
+                    showProfileViewButton();
+                } else {
+                    showRegisterButton();
+                }
+            } else {
+                Toast.makeText(this, "Failed to check user data: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+//    MANIPULATING  VISIBILITY OF REGISTER AND PROFILE BUTTONS
+    private void showRegisterButton() {
+        buttonRegisterFarmer.setVisibility(View.VISIBLE);
+        buttonProfileView.setVisibility(View.GONE);
+    }
+
+    private void showProfileViewButton() {
+        buttonRegisterFarmer.setVisibility(View.GONE);
+        buttonProfileView.setVisibility(View.VISIBLE);
     }
 
     private  void replaceFragment(Fragment fragment) {
