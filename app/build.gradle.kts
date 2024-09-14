@@ -49,12 +49,15 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity.ktx)
     implementation(libs.constraintlayout)
     implementation(libs.kotlinstdlib)
+
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.extjunit)
     androidTestImplementation(libs.espressocore)
 //    implementation(libs.appcompat.v161)
